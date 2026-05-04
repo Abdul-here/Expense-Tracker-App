@@ -1,0 +1,40 @@
+{
+  "transactions": [
+    {
+      "id": 1777824171664,
+      "type": "expense",
+      "amount": 5000,
+      "category": "Food",
+      "date": "2026-05-12",
+      "note": null,
+      "created_at": "2026-05-03T16:02:51.664Z"
+    },
+    {
+      "id": 1777834037297,
+      "type": "expense",
+      "amount": 2400,
+      "category": "Bills",
+      "date": "2026-05-04",
+      "note": "Electricity Bill",
+      "created_at": "2026-05-03T18:47:17.297Z"
+    },
+    {
+      "id": 1777834086448,
+      "type": "income",
+      "amount": 20000,
+      "category": "Other",
+      "date": "2026-05-04",
+      "note": "Received from Abdullah",
+      "created_at": "2026-05-03T18:48:06.448Z"
+    },
+    {
+      "id": 1777834985835,
+      "type": "income",
+      "amount": 40000,
+      "category": "Other",
+      "date": "2026-05-06",
+      "note": "From Uncle",
+      "created_at": "2026-05-03T19:03:05.835Z"
+    }
+  ]
+}
