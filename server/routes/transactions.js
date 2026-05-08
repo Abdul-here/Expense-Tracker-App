@@ -2,6 +2,16 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../db/database');
 
+function logRouteError(routeName, err, context = {}) {
+  console.error(`[transactions] ${routeName} failed`, {
+    message: err?.message,
+    code: err?.code,
+    details: err?.details,
+    hint: err?.hint,
+    context,
+  });
+}
+
 // ─────────────────────────────────────────────
 // GET /api/transactions/summary
 // Returns: total income, total expenses, balance
@@ -28,6 +38,7 @@ router.get('/summary', async (req, res) => {
 
     res.json({ totalIncome, totalExpense, balance });
   } catch (err) {
+    logRouteError('GET /summary', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -50,6 +61,7 @@ router.get('/', async (req, res) => {
 
     res.json(transactions);
   } catch (err) {
+    logRouteError('GET /', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -96,6 +108,13 @@ router.post('/', async (req, res) => {
     const newTransaction = inserted;
     res.status(201).json(newTransaction);
   } catch (err) {
+    logRouteError('POST /', err, {
+      type,
+      amount,
+      category,
+      date,
+      hasNote: Boolean(note),
+    });
     res.status(500).json({ error: err.message });
   }
 });
@@ -161,6 +180,14 @@ router.put('/:id', async (req, res) => {
 
     res.json(updated);
   } catch (err) {
+    logRouteError('PUT /:id', err, {
+      id,
+      type,
+      amount,
+      category,
+      date,
+      hasNote: Boolean(note),
+    });
     res.status(500).json({ error: err.message });
   }
 });
@@ -197,6 +224,7 @@ router.delete('/:id', async (req, res) => {
 
     res.json({ message: 'Transaction deleted successfully' });
   } catch (err) {
+    logRouteError('DELETE /:id', err, { id });
     res.status(500).json({ error: err.message });
   }
 });
