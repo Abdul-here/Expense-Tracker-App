@@ -1,6 +1,13 @@
-const BASE_URL = import.meta.env.PROD
-  ? 'https://expense-tracker-app-production-ad40.up.railway.app/api'
-  : 'http://localhost:5000/api';
+const RAILWAY_API_URL = 'https://expense-tracker-app-production-ad40.up.railway.app/api';
+const LOCAL_API_URL = 'http://localhost:5000/api';
+
+const isVercelHost =
+  typeof window !== 'undefined' &&
+  window.location.hostname.includes('vercel.app');
+
+const BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD || isVercelHost ? RAILWAY_API_URL : LOCAL_API_URL);
 
 export const fetchTransactions = async () => {
   const res = await fetch(`${BASE_URL}/transactions`);

@@ -4,7 +4,11 @@ import { formatAmountForInput } from '../utils/formatAmount';
 const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Investment', 'Other'];
 const EXPENSE_CATEGORIES = ['Food', 'Rent', 'Transport', 'Bills', 'Shopping', 'Other'];
 
-const today = () => new Date().toISOString().split('T')[0];
+const today = () => {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().split('T')[0];
+};
 
 function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
   const [type, setType] = useState('expense');
