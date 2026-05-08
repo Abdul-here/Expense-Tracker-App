@@ -5,7 +5,13 @@ const transactionsRouter = require('./routes/transactions');
 const app = express();
 const PORT = 5000;
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://expense-tracker-app-psi-ten.vercel.app',
+    'https://expense-tracker-app-production-ad40.up.railway.app',
+    'http://localhost:5173',
+  ],
+}));
 app.use(express.json());
 
 // Routes
