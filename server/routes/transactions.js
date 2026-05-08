@@ -1,22 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db/database');
+const supabase = require('../db/database');
 
 // ─────────────────────────────────────────────
 // GET /api/transactions/summary
 // Returns: total income, total expenses, balance
 // ─────────────────────────────────────────────
-router.get('/summary', (req, res) => {
+router.get('/summary', async (req, res) => {
   try {
-    const all = db.get('transactions').value();
+    const { data: all, error } = await supabase
+      .from('transactions')
+      .select('type, amount');
+
+    if (error) {
+      throw error;
+    }
 
     const totalIncome = all
       .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const totalExpense = all
       .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const balance = totalIncome - totalExpense;
 
@@ -30,12 +36,17 @@ router.get('/summary', (req, res) => {
 // GET /api/transactions
 // Returns: all transactions, newest first
 // ─────────────────────────────────────────────
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const transactions = db
-      .get('transactions')
-      .orderBy(['date', 'created_at'], ['desc', 'desc'])
-      .value();
+    const { data: transactions, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
 
     res.json(transactions);
   } catch (err) {
@@ -47,7 +58,7 @@ router.get('/', (req, res) => {
 // POST /api/transactions
 // Body: { type, amount, category, date, note }
 // ─────────────────────────────────────────────
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { type, amount, category, date, note } = req.body;
 
   if (!type || !amount || !category || !date) {
@@ -59,17 +70,30 @@ router.post('/', (req, res) => {
   }
 
   try {
-    const newTransaction = {
-      id: Date.now(), // unique timestamp-based ID
+    const parsedAmount = parseFloat(amount);
+    if (!Number.isFinite(parsedAmount)) {
+      return res.status(400).json({ error: 'amount must be a valid number' });
+    }
+
+    const payload = {
       type,
-      amount: parseFloat(amount),
+      amount: parsedAmount,
       category,
       date,
       note: note || null,
-      created_at: new Date().toISOString()
     };
 
-    db.get('transactions').push(newTransaction).write();
+    const { data: inserted, error } = await supabase
+      .from('transactions')
+      .insert(payload)
+      .select('*')
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    const newTransaction = inserted;
     res.status(201).json(newTransaction);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -80,11 +104,11 @@ router.post('/', (req, res) => {
 // PUT /api/transactions/:id
 // Body: { type, amount, category, date, note }
 // ─────────────────────────────────────────────
-router.put('/:id', (req, res) => {
-  const id = parseInt(req.params.id, 10);
+router.put('/:id', async (req, res) => {
+  const id = req.params.id;
   const { type, amount, category, date, note } = req.body;
 
-  if (!Number.isFinite(id)) {
+  if (!id) {
     return res.status(400).json({ error: 'Invalid transaction id' });
   }
 
@@ -97,7 +121,15 @@ router.put('/:id', (req, res) => {
   }
 
   try {
-    const exists = db.get('transactions').find({ id }).value();
+    const { data: exists, error: existsError } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (existsError) {
+      throw existsError;
+    }
 
     if (!exists) {
       return res.status(404).json({ error: 'Transaction not found' });
@@ -108,8 +140,7 @@ router.put('/:id', (req, res) => {
       return res.status(400).json({ error: 'amount must be a valid number' });
     }
 
-    const updated = {
-      ...exists,
+    const updatedPayload = {
       type,
       amount: parsedAmount,
       category,
@@ -117,7 +148,16 @@ router.put('/:id', (req, res) => {
       note: note || null,
     };
 
-    db.get('transactions').find({ id }).assign(updated).write();
+    const { data: updated, error: updateError } = await supabase
+      .from('transactions')
+      .update(updatedPayload)
+      .eq('id', id)
+      .select('*')
+      .single();
+
+    if (updateError) {
+      throw updateError;
+    }
 
     res.json(updated);
   } catch (err) {
@@ -128,17 +168,33 @@ router.put('/:id', (req, res) => {
 // ─────────────────────────────────────────────
 // DELETE /api/transactions/:id
 // ─────────────────────────────────────────────
-router.delete('/:id', (req, res) => {
-  const id = parseInt(req.params.id);
+router.delete('/:id', async (req, res) => {
+  const id = req.params.id;
 
   try {
-    const exists = db.get('transactions').find({ id }).value();
+    const { data: exists, error: existsError } = await supabase
+      .from('transactions')
+      .select('id')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (existsError) {
+      throw existsError;
+    }
 
     if (!exists) {
       return res.status(404).json({ error: 'Transaction not found' });
     }
 
-    db.get('transactions').remove({ id }).write();
+    const { error: deleteError } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) {
+      throw deleteError;
+    }
+
     res.json({ message: 'Transaction deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });

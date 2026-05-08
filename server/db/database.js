@@ -1,14 +1,12 @@
-const low = require('lowdb');
-const FileSync = require('lowdb/adapters/FileSync');
-const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 
-// Data is stored in db.json — you can open this file to see all your transactions!
-const adapter = new FileSync(path.join(__dirname, 'db.json'));
-const db = low(adapter);
+const SUPABASE_URL =
+  process.env.SUPABASE_URL || 'https://lklmohwerjpczjhymqtc.supabase.co';
+const SUPABASE_KEY =
+  process.env.SUPABASE_KEY || 'sb_publishable_hf0x4Vc3hgW7VZCYLz9fZw_4wLJT-ja';
 
-// Set default structure if db.json doesn't exist yet
-db.defaults({ transactions: [] }).write();
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-console.log('✅ Database ready — data stored in server/db/db.json');
+console.log('✅ Database ready — connected to Supabase PostgreSQL');
 
-module.exports = db;
+module.exports = supabase;
