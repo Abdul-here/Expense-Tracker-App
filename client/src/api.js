@@ -1,7 +1,7 @@
 const RAILWAY_API_URL = 'https://expense-tracker-app-production-ad40.up.railway.app/api';
 const LOCAL_API_URL = 'http://localhost:5000/api';
 
-const BASE_URL = import.meta.env.PROD ? RAILWAY_API_URL : LOCAL_API_URL;
+const BASE_URL = import.meta.env.VITE_API_URL || RAILWAY_API_URL;
 
 export const fetchTransactions = async () => {
   const res = await fetch(`${BASE_URL}/transactions`);
