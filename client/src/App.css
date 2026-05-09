@@ -900,6 +900,7 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
 .login-logo-icon {
   font-size: 52px;
   margin-bottom: 12px;
+  color: #6c63ff;
 }
 .login-title {
   font-size: 28px;

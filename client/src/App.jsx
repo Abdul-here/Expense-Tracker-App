@@ -138,7 +138,9 @@ function App() {
     return (
       <div className="auth-loading-screen">
         <div className="auth-loading-box">
-          <div className="auth-loading-icon">💰</div>
+          <div className="auth-loading-icon">
+            <i className="fa-solid fa-wallet"></i>
+          </div>
           <p>Loading...</p>
         </div>
       </div>
@@ -151,7 +153,9 @@ function App() {
       <div className="login-screen">
         <div className="login-box">
           <div className="login-logo">
-            <div className="login-logo-icon">💰</div>
+            <div className="login-logo-icon">
+            <i className="fa-solid fa-wallet"></i>
+          </div>
             <h1 className="login-title">ExpenseTracker</h1>
             <p className="login-sub">Personal Finance Manager</p>
           </div>
