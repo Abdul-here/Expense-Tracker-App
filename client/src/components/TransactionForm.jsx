@@ -19,6 +19,13 @@ function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const resetFormFields = () => {
+    setAmount('');
+    setCategory('');
+    setDate(today());
+    setNote('');
+  };
+
   useEffect(() => {
     if (editingTransaction) {
       setType(editingTransaction.type);
@@ -40,7 +47,7 @@ function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
   const switchType = (newType) => {
     if (newType === type) return;
     setType(newType);
-    setCategory('');
+    resetFormFields();
   };
 
   const handleSubmit = async (e) => {
@@ -58,6 +65,9 @@ function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
       });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2200);
+      if (!editingTransaction) {
+        resetFormFields();
+      }
     } catch {
       alert(editingTransaction ? 'Error updating transaction. Is the server running on port 5000?' : 'Error adding transaction. Is the server running on port 5000?');
     } finally {
