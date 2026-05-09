@@ -960,7 +960,7 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
 }
 .user-name {
   font-size: 14px;
-  color: white;
+  color: #1a1a2e;
   font-weight: 500;
   max-width: 160px;
   white-space: nowrap;
@@ -1007,7 +1007,7 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
 }
 .user-name {
   font-size: 14px;
-  color: white;
+  color: #1a1a2e;
   font-weight: 500;
   max-width: 160px;
   white-space: nowrap;
