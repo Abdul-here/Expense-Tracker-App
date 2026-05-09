@@ -1,7 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 
 const defaultUrl = 'https://lklmohwerjpczjhymqtc.supabase.co';
-const defaultKey = 'sb_publishable_hf0x4Vc3hgW7VZCYLz9fZw_4wLJT-ja';
+const defaultKey = 'sb_secret_6fovEJeDrXRW8YNOb7JAaA_8luRd3R1';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || defaultUrl;
 const SUPABASE_KEY =
