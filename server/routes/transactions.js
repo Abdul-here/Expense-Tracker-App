@@ -18,9 +18,11 @@ function logRouteError(routeName, err, context = {}) {
 // ─────────────────────────────────────────────
 router.get('/summary', async (req, res) => {
   try {
+    const userId = req.headers['x-user-id'];
     const { data: all, error } = await supabase
       .from('transactions')
-      .select('type, amount');
+      .select('type, amount')
+      .eq('user_id', userId);
 
     if (error) {
       throw error;
@@ -49,9 +51,11 @@ router.get('/summary', async (req, res) => {
 // ─────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
+    const userId = req.headers['x-user-id'];
     const { data: transactions, error } = await supabase
       .from('transactions')
       .select('*')
+      .eq('user_id', userId)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false });
 
@@ -87,12 +91,14 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'amount must be a valid number' });
     }
 
+    const userId = req.headers['x-user-id'];
     const payload = {
       type,
       amount: parsedAmount,
       category,
       date,
       note: note || null,
+      user_id: userId,
     };
 
     const { data: inserted, error } = await supabase
@@ -140,10 +146,12 @@ router.put('/:id', async (req, res) => {
   }
 
   try {
+    const userId = req.headers['x-user-id'];
     const { data: exists, error: existsError } = await supabase
       .from('transactions')
       .select('*')
       .eq('id', id)
+      .eq('user_id', userId)
       .maybeSingle();
 
     if (existsError) {
@@ -171,6 +179,7 @@ router.put('/:id', async (req, res) => {
       .from('transactions')
       .update(updatedPayload)
       .eq('id', id)
+      .eq('user_id', userId)
       .select('*')
       .single();
 
@@ -199,10 +208,12 @@ router.delete('/:id', async (req, res) => {
   const id = req.params.id;
 
   try {
+    const userId = req.headers['x-user-id'];
     const { data: exists, error: existsError } = await supabase
       .from('transactions')
       .select('id')
       .eq('id', id)
+      .eq('user_id', userId)
       .maybeSingle();
 
     if (existsError) {
@@ -216,7 +227,8 @@ router.delete('/:id', async (req, res) => {
     const { error: deleteError } = await supabase
       .from('transactions')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', userId);
 
     if (deleteError) {
       throw deleteError;
