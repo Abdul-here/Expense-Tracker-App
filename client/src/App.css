@@ -858,3 +858,125 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
   .tx-amount { font-size: 0.85rem; }
   .tx-date, .tx-note { font-size: 0.7rem; }
 }
+
+/* ── Auth Loading ── */
+.auth-loading-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f4ff;
+}
+.auth-loading-box {
+  text-align: center;
+  font-size: 18px;
+  color: #555;
+}
+.auth-loading-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+/* ── Login Screen ── */
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.login-box {
+  background: white;
+  padding: 48px 40px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
+}
+.login-logo {
+  margin-bottom: 8px;
+}
+.login-logo-icon {
+  font-size: 52px;
+  margin-bottom: 12px;
+}
+.login-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+.login-sub {
+  font-size: 14px;
+  color: #888;
+  margin: 6px 0 0;
+}
+.login-divider {
+  height: 1px;
+  background: #eee;
+  margin: 24px 0;
+}
+.login-desc {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 24px;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.google-btn:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #bbb;
+}
+
+/* ── Header User ── */
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.4);
+}
+.user-name {
+  font-size: 14px;
+  color: white;
+  font-weight: 500;
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.logout-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}

@@ -3,6 +3,7 @@ import SummaryCards from './components/SummaryCards';
 import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
 import { fetchTransactions, fetchSummary, addTransaction, updateTransaction, deleteTransaction } from './api';
+import { supabase } from './supabase';
 import './App.css';
 
 function normalizeTransactionDate(dateVal) {
@@ -22,6 +23,8 @@ function normalizeTransactionDate(dateVal) {
 }
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
   const [summary, setSummary] = useState({ totalIncome: 0, totalExpense: 0, balance: 0 });
   const [loading, setLoading] = useState(true);
@@ -31,6 +34,32 @@ function App() {
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
 
+  // ── Auth ──
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleGoogleLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
+  // ── Data ──
   const filteredTransactions = useMemo(() => {
     let rangeStart = fromDate || '';
     let rangeEnd = toDate || '';
@@ -50,17 +79,12 @@ function App() {
   const categoryBreakdown = useMemo(() => {
     const expenseCategories = ['Food', 'Rent', 'Transport', 'Bills', 'Shopping', 'Other'];
     const totals = Object.fromEntries(expenseCategories.map((category) => [category, 0]));
-
     filteredTransactions.forEach((tx) => {
       if (tx.type === 'expense' && totals[tx.category] !== undefined) {
         totals[tx.category] += Number(tx.amount) || 0;
       }
     });
-
-    return expenseCategories.map((category) => ({
-      category,
-      total: totals[category],
-    }));
+    return expenseCategories.map((category) => ({ category, total: totals[category] }));
   }, [filteredTransactions]);
 
   const loadData = useCallback(async () => {
@@ -71,13 +95,15 @@ function App() {
       setTransactions(txns);
       setSummary(sum);
     } catch {
-      setError('Cannot connect to server. Make sure the backend is running on port 5000.');
+      setError('Cannot connect to server. Make sure the backend is running.');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    if (user) loadData();
+  }, [user, loadData]);
 
   const handleSaveTransaction = async (payload) => {
     const { id, type, amount, category, date, note } = payload;
@@ -91,9 +117,7 @@ function App() {
     await loadData();
   };
 
-  const handleDeleteRequest = (id) => {
-    setDeleteTargetId(id);
-  };
+  const handleDeleteRequest = (id) => setDeleteTargetId(id);
 
   const handleDeleteConfirm = async () => {
     if (deleteTargetId == null) return;
@@ -103,16 +127,54 @@ function App() {
     await loadData();
   };
 
-  const handleDeleteCancel = () => {
-    setDeleteTargetId(null);
-  };
+  const handleDeleteCancel = () => setDeleteTargetId(null);
 
   const handleDeleteModalBackdrop = (e) => {
-    if (e.target === e.currentTarget) {
-      handleDeleteCancel();
-    }
+    if (e.target === e.currentTarget) handleDeleteCancel();
   };
 
+  // ── Auth loading screen ──
+  if (authLoading) {
+    return (
+      <div className="auth-loading-screen">
+        <div className="auth-loading-box">
+          <div className="auth-loading-icon">💰</div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Login screen ──
+  if (!user) {
+    return (
+      <div className="login-screen">
+        <div className="login-box">
+          <div className="login-logo">
+            <div className="login-logo-icon">💰</div>
+            <h1 className="login-title">ExpenseTracker</h1>
+            <p className="login-sub">Personal Finance Manager</p>
+          </div>
+          <div className="login-divider" />
+          <p className="login-desc">
+            Sign in to manage your income and expenses securely. Your data is private and tied to your account.
+          </p>
+          <button onClick={handleGoogleLogin} className="google-btn">
+            <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              <path fill="none" d="M0 0h48v48H0z"/>
+            </svg>
+            Continue with Google
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Main app ──
   return (
     <div className="app">
       {/* ── Header ── */}
@@ -126,6 +188,19 @@ function App() {
               <span className="logo-title">ExpenseTracker</span>
               <span className="logo-sub">Personal Finance Manager</span>
             </div>
+          </div>
+          <div className="header-user">
+            {user.user_metadata?.avatar_url && (
+              <img
+                src={user.user_metadata.avatar_url}
+                alt="Profile"
+                className="user-avatar"
+              />
+            )}
+            <span className="user-name">{user.user_metadata?.full_name || user.email}</span>
+            <button onClick={handleLogout} className="logout-btn">
+              Sign Out
+            </button>
           </div>
         </div>
       </header>
@@ -159,6 +234,7 @@ function App() {
         </div>
       </main>
 
+      {/* ── Delete modal ── */}
       {deleteTargetId != null && (
         <div className="modal-backdrop" onClick={handleDeleteModalBackdrop}>
           <div className="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
@@ -178,7 +254,6 @@ function App() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
