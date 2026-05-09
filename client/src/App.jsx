@@ -33,6 +33,7 @@ function App() {
   const [toDate, setToDate] = useState('');
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   // ── Auth ──
   useEffect(() => {
@@ -194,17 +195,30 @@ function App() {
             </div>
           </div>
           <div className="header-user">
-            {user.user_metadata?.avatar_url && (
-              <img
-                src={user.user_metadata.avatar_url}
-                alt="Profile"
-                className="user-avatar"
-              />
+            <div className="user-profile" onClick={() => setShowUserMenu(!showUserMenu)}>
+              {user.user_metadata?.avatar_url && (
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt="Profile"
+                  className="user-avatar"
+                />
+              )}
+              <span className="user-name">{user.user_metadata?.full_name || user.email}</span>
+              <i className="fa-solid fa-chevron-down" style={{color: 'white', fontSize: '12px'}}></i>
+            </div>
+            {showUserMenu && (
+              <div className="user-menu">
+                <div className="user-menu-info">
+                  <strong>{user.user_metadata?.full_name}</strong>
+                  <span>{user.email}</span>
+                </div>
+                <div className="user-menu-divider"/>
+                <button onClick={handleLogout} className="user-menu-logout">
+                  <i className="fa-solid fa-right-from-bracket"></i>
+                  Sign Out
+                </button>
+              </div>
             )}
-            <span className="user-name">{user.user_metadata?.full_name || user.email}</span>
-            <button onClick={handleLogout} className="logout-btn">
-              Sign Out
-            </button>
           </div>
         </div>
       </header>
