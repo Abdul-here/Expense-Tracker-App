@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import SummaryCards from './components/SummaryCards';
 import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
-import { fetchTransactions, fetchSummary, addTransaction, updateTransaction, deleteTransaction } from './api';
+import { fetchTransactions, addTransaction, updateTransaction, deleteTransaction } from './api';
 import { supabase } from './supabase';
 import './App.css';
 
@@ -34,6 +34,9 @@ function App() {
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const now = new Date();
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
 
   // ── Auth ──
   useEffect(() => {
@@ -62,20 +65,21 @@ function App() {
 
   // ── Data ──
   const filteredTransactions = useMemo(() => {
-    let rangeStart = fromDate || '';
-    let rangeEnd = toDate || '';
-    if (rangeStart && rangeEnd && rangeStart > rangeEnd) {
-      [rangeStart, rangeEnd] = [rangeEnd, rangeStart];
-    }
     return transactions.filter((tx) => {
-      if (!rangeStart && !rangeEnd) return true;
       const txDate = normalizeTransactionDate(tx.date);
       if (!txDate) return false;
+      const [txYear, txMonth] = txDate.split('-').map(Number);
+      if (txYear !== selectedYear || txMonth !== selectedMonth) return false;
+      let rangeStart = fromDate || '';
+      let rangeEnd = toDate || '';
+      if (rangeStart && rangeEnd && rangeStart > rangeEnd) {
+        [rangeStart, rangeEnd] = [rangeEnd, rangeStart];
+      }
       if (rangeStart && txDate < rangeStart) return false;
       if (rangeEnd && txDate > rangeEnd) return false;
       return true;
     });
-  }, [transactions, fromDate, toDate]);
+  }, [transactions, selectedYear, selectedMonth, fromDate, toDate]);
 
   const categoryBreakdown = useMemo(() => {
     const expenseCategories = ['Food', 'Rent', 'Transport', 'Bills', 'Shopping', 'Other'];
@@ -88,13 +92,22 @@ function App() {
     return expenseCategories.map((category) => ({ category, total: totals[category] }));
   }, [filteredTransactions]);
 
+  const monthlySummary = useMemo(() => {
+    const totalIncome = filteredTransactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+    const totalExpense = filteredTransactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+    return { totalIncome, totalExpense, balance: totalIncome - totalExpense };
+  }, [filteredTransactions]);
+
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const [txns, sum] = await Promise.all([fetchTransactions(), fetchSummary()]);
+      const txns = await fetchTransactions();
       setTransactions(txns);
-      setSummary(sum);
     } catch {
       setError('Cannot connect to server. Make sure the backend is running.');
     } finally {
@@ -231,7 +244,30 @@ function App() {
             {error}
           </div>
         )}
-        <SummaryCards summary={summary} categoryBreakdown={categoryBreakdown} loading={loading} />
+        <div className="month-selector">
+          <div className="month-selector-inner">
+            <i className="fa-solid fa-calendar"></i>
+            <select
+              value={selectedYear}
+              onChange={e => { setSelectedYear(Number(e.target.value)); setFromDate(''); setToDate(''); }}
+              className="month-select"
+            >
+              {[2024, 2025, 2026, 2027, 2028].map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+            <select
+              value={selectedMonth}
+              onChange={e => { setSelectedMonth(Number(e.target.value)); setFromDate(''); setToDate(''); }}
+              className="month-select"
+            >
+              {['January','February','March','April','May','June','July','August','September','October','November','December'].map((m, i) => (
+                <option key={i+1} value={i+1}>{m}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <SummaryCards summary={monthlySummary} categoryBreakdown={categoryBreakdown} loading={loading} />
         <div className="content-grid">
           <TransactionForm
             onSave={handleSaveTransaction}

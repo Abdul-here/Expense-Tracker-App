@@ -1059,3 +1059,35 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
 .user-menu-logout:hover {
   background: #fff5f5;
 }
+
+.month-selector {
+  margin-bottom: 24px;
+}
+.month-selector-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  width: fit-content;
+}
+.month-selector-inner i {
+  color: #6c63ff;
+  font-size: 18px;
+}
+.month-select {
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a2e;
+  background: white;
+  cursor: pointer;
+  outline: none;
+}
+.month-select:focus {
+  border-color: #6c63ff;
+}
