@@ -1091,3 +1091,47 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
 .month-select:focus {
   border-color: #6c63ff;
 }
+
+.charts-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.chart-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.chart-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.chart-title i {
+  color: #6c63ff;
+}
+.chart-empty {
+  height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  gap: 12px;
+  font-size: 14px;
+}
+.chart-empty i {
+  font-size: 48px;
+  color: #ddd;
+}
+@media (max-width: 768px) {
+  .charts-container {
+    grid-template-columns: 1fr;
+  }
+}

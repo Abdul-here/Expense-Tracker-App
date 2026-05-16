@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import SummaryCards from './components/SummaryCards';
+import SpendingCharts from './components/SpendingCharts';
 import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
 import { fetchTransactions, addTransaction, updateTransaction, deleteTransaction } from './api';
@@ -268,6 +269,7 @@ function App() {
           </div>
         </div>
         <SummaryCards summary={monthlySummary} categoryBreakdown={categoryBreakdown} loading={loading} />
+        <SpendingCharts categoryBreakdown={categoryBreakdown} monthlySummary={monthlySummary} />
         <div className="content-grid">
           <TransactionForm
             onSave={handleSaveTransaction}
