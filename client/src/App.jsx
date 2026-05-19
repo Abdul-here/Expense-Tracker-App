@@ -35,6 +35,7 @@ function App() {
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
@@ -50,6 +51,16 @@ function App() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('darkMode', 'false');
+    }
+  }, [darkMode]);
 
   const handleGoogleLogin = async () => {
     await supabase.auth.signInWithOAuth({
@@ -209,6 +220,9 @@ function App() {
             </div>
           </div>
           <div className="header-user">
+            <button className="dark-mode-toggle" onClick={() => setDarkMode(!darkMode)} title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
+              <i className={darkMode ? 'fa-solid fa-sun' : 'fa-solid fa-moon'}></i>
+            </button>
             <div className="user-profile" onClick={() => setShowUserMenu(!showUserMenu)}>
               {user.user_metadata?.avatar_url && (
                 <img

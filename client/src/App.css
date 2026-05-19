@@ -1,3 +1,31 @@
+[data-theme="dark"] {
+  --bg-page:       #0f172a;
+  --bg-card:       #1e293b;
+  --bg-input:      #273548;
+  --bg-hover:      #2d3f55;
+  --border:        #334155;
+  --border-focus:  #818cf8;
+  --accent:        #818cf8;
+  --accent-light:  #1e1b4b;
+  --accent-hover:  #6366f1;
+  --income:        #34d399;
+  --income-light:  #022c22;
+  --income-border: #065f46;
+  --expense:       #fb7185;
+  --expense-light: #2d0a14;
+  --expense-border:#9f1239;
+  --text-primary:  #f1f5f9;
+  --text-secondary:#94a3b8;
+  --text-muted:    #64748b;
+  --text-white:    #ffffff;
+  --shadow-sm:     0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md:     0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg:     0 10px 30px rgba(0,0,0,0.5);
+  --shadow-accent: 0 4px 16px rgba(129,140,248,0.25);
+  --shadow-income: 0 4px 16px rgba(52,211,153,0.2);
+  --shadow-expense:0 4px 16px rgba(251,113,133,0.2);
+}
+
 /* ===== CSS Variables — Light Theme ===== */
 :root {
   --bg-page:       #f0f2f8;
