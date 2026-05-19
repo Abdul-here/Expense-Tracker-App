@@ -54,10 +54,10 @@ function App() {
 
   useEffect(() => {
     if (darkMode) {
-      document.documentElement.setAttribute('data-theme', 'dark');
+      document.body.setAttribute('data-theme', 'dark');
       localStorage.setItem('darkMode', 'true');
     } else {
-      document.documentElement.removeAttribute('data-theme');
+      document.body.removeAttribute('data-theme');
       localStorage.setItem('darkMode', 'false');
     }
   }, [darkMode]);
