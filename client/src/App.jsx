@@ -220,8 +220,9 @@ function App() {
             </div>
           </div>
           <div className="header-user">
-            <button className="dark-mode-toggle" onClick={() => setDarkMode(!darkMode)} title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
-              <i className={darkMode ? 'fa-solid fa-sun' : 'fa-solid fa-moon'}></i>
+            <button className={`theme-toggle ${darkMode ? 'theme-toggle--dark' : ''}`} onClick={() => setDarkMode(!darkMode)} title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'} aria-label="Toggle dark mode">
+              <span className="theme-toggle-thumb"></span>
+              <i className={`fa-solid ${darkMode ? 'fa-sun' : 'fa-moon'}`}></i>
             </button>
             <div className="user-profile" onClick={() => setShowUserMenu(!showUserMenu)}>
               {user.user_metadata?.avatar_url && (
