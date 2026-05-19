@@ -1007,7 +1007,7 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
 }
 .user-name {
   font-size: 14px;
-  color: #1a1a2e;
+  color: white;
   font-weight: 500;
   max-width: 160px;
   white-space: nowrap;
@@ -1062,6 +1062,8 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
 
 .month-selector {
   margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
 }
 .month-selector-inner {
   display: flex;
@@ -1133,5 +1135,51 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
 @media (max-width: 768px) {
   .charts-container {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .month-selector {
+    justify-content: center;
+  }
+  .month-selector-inner {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 16px;
+  }
+  .month-select {
+    font-size: 14px;
+    padding: 7px 10px;
+    flex: 1;
+  }
+  .charts-container {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .chart-card {
+    padding: 16px;
+  }
+  .chart-title {
+    font-size: 14px;
+  }
+  .user-name {
+    display: none;
+  }
+  .login-box {
+    padding: 32px 24px;
+    margin: 16px;
+  }
+  .login-title {
+    font-size: 24px;
+  }
+}
+@media (max-width: 420px) {
+  .month-selector-inner {
+    gap: 8px;
+    padding: 8px 12px;
+  }
+  .month-select {
+    font-size: 13px;
+    padding: 6px 8px;
   }
 }
