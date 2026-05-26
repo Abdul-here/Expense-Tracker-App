@@ -301,6 +301,12 @@ function App() {
             toDate={toDate}
             onFromDateChange={setFromDate}
             onToDateChange={setToDate}
+            categoryBreakdown={categoryBreakdown}
+            monthlySummary={monthlySummary}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            userName={user?.user_metadata?.full_name || user?.email || ''}
+            userEmail={user?.email || ''}
           />
         </div>
       </main>

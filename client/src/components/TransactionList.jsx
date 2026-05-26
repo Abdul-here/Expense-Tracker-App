@@ -1,5 +1,6 @@
 // Font Awesome icon class for each category
 import { formatMoneyDisplay } from '../utils/formatAmount';
+import { exportToPDF } from '../utils/exportPDF';
 
 const CATEGORY_ICONS = {
   Food:       'fa-solid fa-utensils',
@@ -23,7 +24,25 @@ function TransactionList({
   toDate,
   onFromDateChange,
   onToDateChange,
+  // PDF export props
+  categoryBreakdown,
+  monthlySummary,
+  selectedMonth,
+  selectedYear,
+  userName,
+  userEmail,
 }) {
+  const handleExportPDF = () => {
+    exportToPDF({
+      transactions,
+      categoryBreakdown,
+      monthlySummary,
+      selectedMonth,
+      selectedYear,
+      userName,
+      userEmail,
+    });
+  };
   const formatDate = (dateStr) => {
     const d = new Date(dateStr + 'T00:00:00');
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -70,10 +89,46 @@ function TransactionList({
             />
           </div>
         </div>
-        <span className="list-count">
-          <i className="fa-solid fa-layer-group" style={{ fontSize: '0.65rem' }}></i>
-          &nbsp;{transactions.length} total
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+          <span className="list-count">
+            <i className="fa-solid fa-layer-group" style={{ fontSize: '0.65rem' }}></i>
+            &nbsp;{transactions.length} total
+          </span>
+          <button
+            id="export-pdf-btn"
+            type="button"
+            onClick={handleExportPDF}
+            title="Export to PDF"
+            aria-label="Export transactions to PDF"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              padding: '0.28rem 0.7rem',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              fontFamily: 'inherit',
+              color: 'var(--accent)',
+              background: 'var(--accent-light)',
+              border: '1px solid rgba(99,102,241,0.3)',
+              borderRadius: '100px',
+              cursor: 'pointer',
+              transition: 'var(--transition-fast)',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'var(--accent)';
+              e.currentTarget.style.color = '#fff';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'var(--accent-light)';
+              e.currentTarget.style.color = 'var(--accent)';
+            }}
+          >
+            <i className="fa-solid fa-file-pdf" />
+            Export PDF
+          </button>
+        </div>
       </div>
 
       {transactions.length === 0 ? (
