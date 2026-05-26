@@ -1226,9 +1226,37 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
   .charts-container {
     grid-template-columns: 1fr;
   }
+  .chart-card {
+    overflow: hidden;
+  }
 }
 
 @media (max-width: 600px) {
+  /* ── Contain the two-column grid and its children ── */
+  .content-grid {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  .form-card,
+  .list-card {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  .transaction-list {
+    min-width: 0;
+  }
+  .transaction-item {
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  .tx-details {
+    min-width: 0;
+    overflow: hidden;
+  }
+  /* ── Month selector ── */
   .month-selector {
     justify-content: center;
     width: 100%;
