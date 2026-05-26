@@ -76,7 +76,7 @@ body[data-theme="dark"] {
   margin: 0;
   padding: 0;
 }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; overflow-x: hidden; }
 
 body {
   font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
@@ -85,6 +85,13 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+.app {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 /* ===== Header ===== */
@@ -1233,7 +1240,7 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
     max-width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    justify-content: center;
+    justify-content: space-between;
     padding: 10px 16px;
   }
   .month-select {
