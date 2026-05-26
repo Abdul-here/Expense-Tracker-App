@@ -848,7 +848,20 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
 @media (max-width: 600px) {
   .app-main { padding: 1rem 0.8rem 1.4rem; }
   .logo-sub { display: none; }
-  .summary-grid { grid-template-columns: 1fr; }
+  .summary-grid {
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  .summary-card,
+  .category-breakdown-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
   .card-balance-pos, .card-balance-neg { grid-column: span 1; }
   .header-content { padding: 0 0.8rem; height: 62px; }
   .card-value { font-size: 1.25rem; }
@@ -1211,9 +1224,15 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
 @media (max-width: 600px) {
   .month-selector {
     justify-content: center;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
   .month-selector-inner {
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     justify-content: center;
     padding: 10px 16px;
   }
@@ -1221,13 +1240,29 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
     font-size: 14px;
     padding: 7px 10px;
     flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
   }
   .charts-container {
     grid-template-columns: 1fr;
     gap: 16px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
   .chart-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     padding: 16px;
+    overflow: hidden;
+  }
+  .chart-card .recharts-responsive-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
   }
   .chart-title {
     font-size: 14px;
