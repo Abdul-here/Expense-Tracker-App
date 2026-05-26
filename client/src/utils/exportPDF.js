@@ -1,5 +1,5 @@
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+// jsPDF and jspdf-autotable are loaded dynamically inside exportToPDF
+// to avoid Rolldown/Vite build-time resolution errors on Vercel.
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -25,7 +25,7 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export function exportToPDF({
+export async function exportToPDF({
   transactions,
   categoryBreakdown,
   monthlySummary,
@@ -34,6 +34,9 @@ export function exportToPDF({
   userName,
   userEmail,
 }) {
+  const { default: jsPDF } = await import('jspdf');
+  const { default: autoTable } = await import('jspdf-autotable');
+
   const isLandscape = window.innerWidth >= 768;
   const orientation = isLandscape ? 'landscape' : 'portrait';
   const doc = new jsPDF({ orientation, unit: 'pt', format: 'a4' });
