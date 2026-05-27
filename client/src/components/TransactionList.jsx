@@ -32,16 +32,21 @@ function TransactionList({
   userName,
   userEmail,
 }) {
-  const handleExportPDF = () => {
-    exportToPDF({
-      transactions,
-      categoryBreakdown,
-      monthlySummary,
-      selectedMonth,
-      selectedYear,
-      userName,
-      userEmail,
-    });
+  const handleExportPDF = async () => {
+    try {
+      await exportToPDF({
+        transactions,
+        categoryBreakdown,
+        monthlySummary,
+        selectedMonth,
+        selectedYear,
+        userName,
+        userEmail,
+      });
+    } catch (err) {
+      console.error(err);
+      alert('PDF export failed: ' + err.message);
+    }
   };
   const formatDate = (dateStr) => {
     const d = new Date(dateStr + 'T00:00:00');
