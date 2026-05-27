@@ -34,8 +34,9 @@ export async function exportToPDF({
   userName,
   userEmail,
 }) {
-  const { default: jsPDF } = await import('jspdf');
-  const { default: autoTable } = await import('jspdf-autotable');
+  const { jsPDF } = await import('jspdf');
+  await import('jspdf-autotable');
+  const autoTable = (await import('jspdf-autotable')).default;
 
   const isLandscape = window.innerWidth >= 768;
   const orientation = isLandscape ? 'landscape' : 'portrait';

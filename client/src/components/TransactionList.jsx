@@ -45,7 +45,34 @@ function TransactionList({
       });
     } catch (err) {
       console.error(err);
-      alert('PDF export failed: ' + err.message);
+      const toast = document.createElement('div');
+      toast.setAttribute('role', 'alert');
+      toast.textContent = '⚠ PDF export failed: ' + err.message;
+      Object.assign(toast.style, {
+        position:     'fixed',
+        top:          '1.25rem',
+        right:        '1.25rem',
+        zIndex:       '9999',
+        display:      'flex',
+        alignItems:   'center',
+        gap:          '0.5rem',
+        padding:      '0.75rem 1.1rem',
+        background:   '#be123c',
+        color:        '#fff',
+        fontSize:     '0.85rem',
+        fontWeight:   '600',
+        fontFamily:   'inherit',
+        borderRadius: '10px',
+        boxShadow:    '0 8px 24px rgba(0,0,0,0.25)',
+        opacity:      '1',
+        transition:   'opacity 0.4s ease',
+        maxWidth:     '360px',
+        lineHeight:   '1.4',
+        pointerEvents:'none',
+      });
+      document.body.appendChild(toast);
+      setTimeout(() => { toast.style.opacity = '0'; }, 3600);
+      setTimeout(() => { toast.remove(); }, 4000);
     }
   };
   const formatDate = (dateStr) => {
