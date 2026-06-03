@@ -511,6 +511,71 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
   padding: 0.45rem 0.6rem;
   font-size: 0.78rem;
 }
+
+/* ── Transaction Search Bar ── */
+.tx-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 340px;
+}
+.tx-search-icon {
+  position: absolute;
+  left: 0.7rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  pointer-events: none;
+  z-index: 1;
+  transition: var(--transition-fast);
+}
+.tx-search-input {
+  width: 100%;
+  padding: 0.45rem 2.1rem 0.45rem 2rem;
+  font-size: 0.82rem;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-radius: 100px;
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  transition: var(--transition-fast);
+  outline: none;
+}
+.tx-search-input::placeholder { color: var(--text-muted); }
+.tx-search-input:hover { border-color: #cbd5e1; }
+.tx-search-input:focus {
+  border-color: var(--accent);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
+.tx-search-input:focus + .tx-search-clear,
+.tx-search-wrap:focus-within .tx-search-icon {
+  color: var(--accent);
+}
+.tx-search-clear {
+  position: absolute;
+  right: 0.55rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: var(--text-muted);
+  color: var(--bg-card);
+  font-size: 0.6rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  padding: 0;
+  flex-shrink: 0;
+}
+.tx-search-clear:hover {
+  background: var(--accent);
+  transform: scale(1.1);
+}
+
 .list-count {
   font-size: 0.75rem;
   color: var(--text-muted);

@@ -1,4 +1,5 @@
 // Font Awesome icon class for each category
+import { useState } from 'react';
 import { formatMoneyDisplay } from '../utils/formatAmount';
 import { exportToPDF } from '../utils/exportPDF';
 
@@ -32,6 +33,20 @@ function TransactionList({
   userName,
   userEmail,
 }) {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter by search across category, note, and amount — on top of date filtering done in App
+  const displayedTransactions = searchQuery.trim()
+    ? transactions.filter((tx) => {
+        const q = searchQuery.trim().toLowerCase();
+        return (
+          (tx.category || '').toLowerCase().includes(q) ||
+          (tx.note || '').toLowerCase().includes(q) ||
+          String(tx.amount).includes(q)
+        );
+      })
+    : transactions;
+
   const handleExportPDF = async () => {
     try {
       await exportToPDF({
@@ -120,11 +135,34 @@ function TransactionList({
               onChange={(e) => onToDateChange(e.target.value)}
             />
           </div>
+          <div className="tx-search-wrap">
+            <i className="fa-solid fa-magnifying-glass tx-search-icon" />
+            <input
+              id="tx-search"
+              type="text"
+              className="tx-search-input"
+              placeholder="Search category, note, amount…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search transactions"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className="tx-search-clear"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+                title="Clear search"
+              >
+                <i className="fa-solid fa-xmark" />
+              </button>
+            )}
+          </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
           <span className="list-count">
             <i className="fa-solid fa-layer-group" style={{ fontSize: '0.65rem' }}></i>
-            &nbsp;{transactions.length} total
+            &nbsp;{displayedTransactions.length}{searchQuery.trim() ? ` of ${transactions.length}` : ' total'}
           </span>
           <button
             id="export-pdf-btn"
@@ -163,25 +201,31 @@ function TransactionList({
         </div>
       </div>
 
-      {transactions.length === 0 ? (
+      {displayedTransactions.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">
-            <i className="fa-regular fa-folder-open"></i>
+            {searchQuery.trim()
+              ? <i className="fa-solid fa-magnifying-glass"></i>
+              : <i className="fa-regular fa-folder-open"></i>}
           </div>
           <p>
-            {(fromDate || toDate) && totalStoredCount > 0
-              ? 'No transactions in this date range'
-              : 'No transactions yet'}
+            {searchQuery.trim()
+              ? 'No matches found'
+              : (fromDate || toDate) && totalStoredCount > 0
+                ? 'No transactions in this date range'
+                : 'No transactions yet'}
           </p>
           <p className="empty-sub">
-            {(fromDate || toDate) && totalStoredCount > 0
-              ? 'Try widening the from / to dates or clear the filters'
-              : 'Add your first income or expense using the form'}
+            {searchQuery.trim()
+              ? 'Try a different keyword or clear the search'
+              : (fromDate || toDate) && totalStoredCount > 0
+                ? 'Try widening the from / to dates or clear the filters'
+                : 'Add your first income or expense using the form'}
           </p>
         </div>
       ) : (
         <div className="transaction-list">
-          {transactions.map((tx) => (
+          {displayedTransactions.map((tx) => (
             <div key={tx.id} className={`transaction-item ${tx.type}`}>
 
               {/* Colored left bar */}
