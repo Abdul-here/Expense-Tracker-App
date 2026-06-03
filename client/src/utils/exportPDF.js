@@ -36,7 +36,6 @@ export async function exportToPDF({
 }) {
   const { jsPDF } = await import('jspdf');
   await import('jspdf-autotable');
-  const autoTable = (await import('jspdf-autotable')).default;
 
   const isLandscape = window.innerWidth >= 768;
   const orientation = isLandscape ? 'landscape' : 'portrait';
@@ -110,7 +109,7 @@ export async function exportToPDF({
   const balance = monthlySummary.balance;
   const balanceColor = balance >= 0 ? [5, 150, 105] : [225, 29, 72];
 
-  autoTable(doc, {
+  doc.autoTable({
     startY: y,
     margin: { left: marginL, right: marginR },
     tableWidth: contentW,
@@ -154,7 +153,7 @@ export async function exportToPDF({
     doc.text('Expense by Category', marginL, y);
     y += 10;
 
-    autoTable(doc, {
+    doc.autoTable({
       startY: y,
       margin: { left: marginL, right: marginR },
       tableWidth: contentW,
@@ -198,7 +197,7 @@ export async function exportToPDF({
     tx.note || '—',
   ]);
 
-  autoTable(doc, {
+  doc.autoTable({
     startY: y,
     margin: { left: marginL, right: marginR },
     tableWidth: contentW,
