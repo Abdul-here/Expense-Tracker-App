@@ -14,10 +14,7 @@ const MUTED    = [100, 116, 139];  // #64748b
 const ROW_ALT  = [248, 250, 252];  // #f8fafc
 
 function formatMoney(amount) {
-  return Number(amount).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  return Number(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 function formatDate(dateStr) {
@@ -116,8 +113,8 @@ export async function exportToPDF({
     head: [['Metric', 'Amount']],
     body: [
       ['Total Income',    `+ ${formatMoney(monthlySummary.totalIncome)}`],
-      ['Total Expenses',  `− ${formatMoney(monthlySummary.totalExpense)}`],
-      ['Net Balance',     `${balance >= 0 ? '+' : '−'} ${formatMoney(Math.abs(balance))}`],
+      ['Total Expenses',  `- ${formatMoney(monthlySummary.totalExpense)}`],
+      ['Net Balance',     `${balance >= 0 ? '+' : '-'} ${formatMoney(Math.abs(balance))}`],
     ],
     headStyles: {
       fillColor: ACCENT,
@@ -193,7 +190,7 @@ export async function exportToPDF({
     formatDate(tx.date),
     tx.type.charAt(0).toUpperCase() + tx.type.slice(1),
     tx.category,
-    `${tx.type === 'income' ? '+' : '−'} ${formatMoney(tx.amount)}`,
+    `${tx.type === 'income' ? '+' : '-'} ${formatMoney(tx.amount)}`,
     tx.note || '—',
   ]);
 
