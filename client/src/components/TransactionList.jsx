@@ -1,5 +1,4 @@
 // Font Awesome icon class for each category
-import { useState } from 'react';
 import { formatMoneyDisplay } from '../utils/formatAmount';
 import { exportToPDF } from '../utils/exportPDF';
 
@@ -17,7 +16,10 @@ const CATEGORY_ICONS = {
 
 function TransactionList({
   transactions,
+  filteredCount,
   totalStoredCount,
+  searchQuery,
+  onSearchQueryChange,
   onDelete,
   onEdit,
   loading,
@@ -33,20 +35,6 @@ function TransactionList({
   userName,
   userEmail,
 }) {
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // Filter by search across category, note, and amount — on top of date filtering done in App
-  const displayedTransactions = searchQuery.trim()
-    ? transactions.filter((tx) => {
-        const q = searchQuery.trim().toLowerCase();
-        return (
-          (tx.category || '').toLowerCase().includes(q) ||
-          (tx.note || '').toLowerCase().includes(q) ||
-          String(tx.amount).includes(q)
-        );
-      })
-    : transactions;
-
   const handleExportPDF = async () => {
     try {
       await exportToPDF({
@@ -143,14 +131,14 @@ function TransactionList({
               className="tx-search-input"
               placeholder="Search category, note, amount…"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => onSearchQueryChange(e.target.value)}
               aria-label="Search transactions"
             />
             {searchQuery && (
               <button
                 type="button"
                 className="tx-search-clear"
-                onClick={() => setSearchQuery('')}
+                onClick={() => onSearchQueryChange('')}
                 aria-label="Clear search"
                 title="Clear search"
               >
@@ -162,7 +150,7 @@ function TransactionList({
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
           <span className="list-count">
             <i className="fa-solid fa-layer-group" style={{ fontSize: '0.65rem' }}></i>
-            &nbsp;{displayedTransactions.length}{searchQuery.trim() ? ` of ${transactions.length}` : ' total'}
+            &nbsp;{transactions.length}{searchQuery.trim() ? ` of ${filteredCount}` : ' total'}
           </span>
           <button
             id="export-pdf-btn"
@@ -201,7 +189,7 @@ function TransactionList({
         </div>
       </div>
 
-      {displayedTransactions.length === 0 ? (
+      {transactions.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">
             {searchQuery.trim()
@@ -225,7 +213,7 @@ function TransactionList({
         </div>
       ) : (
         <div className="transaction-list">
-          {displayedTransactions.map((tx) => (
+          {transactions.map((tx) => (
             <div key={tx.id} className={`transaction-item ${tx.type}`}>
 
               {/* Colored left bar */}

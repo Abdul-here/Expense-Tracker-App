@@ -23,6 +23,16 @@ function normalizeTransactionDate(dateVal) {
   return '';
 }
 
+function matchesSearchQuery(tx, query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return (
+    (tx.category || '').toLowerCase().includes(q) ||
+    (tx.note || '').toLowerCase().includes(q) ||
+    String(tx.amount).includes(q)
+  );
+}
+
 function App() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -32,6 +42,7 @@ function App() {
   const [error, setError] = useState(null);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -92,6 +103,11 @@ function App() {
       return true;
     });
   }, [transactions, selectedYear, selectedMonth, fromDate, toDate]);
+
+  const searchFilteredTransactions = useMemo(() => {
+    if (!searchQuery.trim()) return filteredTransactions;
+    return filteredTransactions.filter((tx) => matchesSearchQuery(tx, searchQuery));
+  }, [filteredTransactions, searchQuery]);
 
   const categoryBreakdown = useMemo(() => {
     const defaultCategories = ['Food', 'Rent', 'Transport', 'Bills', 'Shopping', 'Other'];
@@ -302,8 +318,11 @@ function App() {
             onCancelEdit={() => setEditingTransaction(null)}
           />
           <TransactionList
-            transactions={filteredTransactions}
+            transactions={searchFilteredTransactions}
+            filteredCount={filteredTransactions.length}
             totalStoredCount={transactions.length}
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
             onDelete={handleDeleteRequest}
             onEdit={setEditingTransaction}
             loading={loading}
