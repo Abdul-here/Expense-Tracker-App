@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { formatAmountForInput } from '../utils/formatAmount';
-import { fetchCategories, addCategory } from '../api';
+import { fetchCategories, addCategory, deleteCategory } from '../api';
 
-const DEFAULT_INCOME_CATEGORIES   = ['Salary', 'Freelance', 'Investment', 'Other'];
-const DEFAULT_EXPENSE_CATEGORIES  = ['Food', 'Rent', 'Transport', 'Bills', 'Shopping', 'Other'];
+const DEFAULT_INCOME_CATEGORIES  = ['Salary', 'Freelance', 'Investment', 'Other'];
+const DEFAULT_EXPENSE_CATEGORIES = ['Food', 'Rent', 'Transport', 'Bills', 'Shopping', 'Other'];
 
 const today = () => {
   const now = new Date();
@@ -11,35 +11,163 @@ const today = () => {
   return local.toISOString().split('T')[0];
 };
 
+// ─────────────────────────────────────────────
+// Custom category dropdown component
+// ─────────────────────────────────────────────
+function CategorySelect({ value, onChange, defaultCategories, customCategoryObjects, onDeleteCustom }) {
+  const [open, setOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const wrapperRef = useRef(null);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [open]);
+
+  const customNames = customCategoryObjects.map(c => c.name);
+  const displayLabel = value || 'Select a category...';
+  const isPlaceholder = !value;
+
+  const handleSelect = (cat) => {
+    onChange(cat);
+    setOpen(false);
+  };
+
+  const handleDelete = async (e, catObj) => {
+    e.stopPropagation();
+    if (deletingId) return;
+    setDeletingId(catObj.id);
+    try {
+      await onDeleteCustom(catObj);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  return (
+    <div className="cat-select" ref={wrapperRef}>
+      {/* Trigger – looks like a native <select> */}
+      <button
+        type="button"
+        id="category"
+        className={`cat-select-trigger ${open ? 'cat-select-trigger--open' : ''} ${isPlaceholder ? 'cat-select-trigger--placeholder' : ''}`}
+        onClick={() => setOpen(v => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span className="cat-select-trigger-label">{displayLabel}</span>
+        <i className="fa-solid fa-chevron-down cat-select-chevron"></i>
+      </button>
+
+      {/* Dropdown panel */}
+      {open && (
+        <div className="cat-select-dropdown" role="listbox" aria-label="Category options">
+
+          {/* Placeholder row */}
+          <div
+            className={`cat-select-option cat-select-option--placeholder ${!value ? 'cat-select-option--selected' : ''}`}
+            role="option"
+            aria-selected={!value}
+            onClick={() => handleSelect('')}
+          >
+            <span className="cat-select-option-name">Select a category…</span>
+          </div>
+
+          {/* Default group */}
+          <div className="cat-select-group-label">Default</div>
+          {defaultCategories.map(cat => (
+            <div
+              key={cat}
+              className={`cat-select-option ${value === cat ? 'cat-select-option--selected' : ''}`}
+              role="option"
+              aria-selected={value === cat}
+              onClick={() => handleSelect(cat)}
+            >
+              <span className="cat-select-option-name">{cat}</span>
+            </div>
+          ))}
+
+          {/* Custom group */}
+          {customCategoryObjects.length > 0 && (
+            <>
+              <div className="cat-select-group-label">Custom</div>
+              {customCategoryObjects.map(catObj => (
+                <div
+                  key={catObj.id}
+                  className={`cat-select-option cat-select-option--custom ${value === catObj.name ? 'cat-select-option--selected' : ''}`}
+                  role="option"
+                  aria-selected={value === catObj.name}
+                  onClick={() => handleSelect(catObj.name)}
+                >
+                  <span className="cat-select-option-name">{catObj.name}</span>
+                  <button
+                    type="button"
+                    className="cat-select-delete-btn"
+                    title={`Delete "${catObj.name}"`}
+                    aria-label={`Delete category ${catObj.name}`}
+                    disabled={deletingId === catObj.id}
+                    onClick={(e) => handleDelete(e, catObj)}
+                  >
+                    {deletingId === catObj.id
+                      ? <i className="fa-solid fa-spinner fa-spin"></i>
+                      : <i className="fa-solid fa-trash"></i>
+                    }
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Main form
+// ─────────────────────────────────────────────
 function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
-  const [type, setType]           = useState('expense');
-  const [amount, setAmount]       = useState('');
-  const [category, setCategory]   = useState('');
-  const [date, setDate]           = useState(today());
-  const [note, setNote]           = useState('');
+  const [type, setType]             = useState('expense');
+  const [amount, setAmount]         = useState('');
+  const [category, setCategory]     = useState('');
+  const [date, setDate]             = useState(today());
+  const [note, setNote]             = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess]     = useState(false);
+  const [success, setSuccess]       = useState(false);
 
   // Custom categories state
-  const [customCategories, setCustomCategories] = useState([]);  // all from Supabase
+  const [customCategories, setCustomCategories] = useState([]); // full objects from Supabase
   const [showAddCat, setShowAddCat] = useState(false);
   const [newCatName, setNewCatName] = useState('');
   const [savingCat, setSavingCat]   = useState(false);
   const [catError, setCatError]     = useState('');
   const addCatInputRef = useRef(null);
 
-  // Load custom categories once on mount
+  // Load custom categories on mount
   useEffect(() => {
     fetchCategories()
       .then(setCustomCategories)
-      .catch(() => {}); // silently ignore if table doesn't exist yet
+      .catch(() => {});
   }, []);
 
-  // Focus the new-category input when it appears
+  // Focus new-category input when panel opens
   useEffect(() => {
-    if (showAddCat && addCatInputRef.current) {
-      addCatInputRef.current.focus();
-    }
+    if (showAddCat && addCatInputRef.current) addCatInputRef.current.focus();
   }, [showAddCat]);
 
   const resetFormFields = () => {
@@ -65,16 +193,12 @@ function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
     }
   }, [editingTransaction]);
 
-  // Merged category list for the current type
+  // Derived lists for current type
   const defaultCategories = type === 'income' ? DEFAULT_INCOME_CATEGORIES : DEFAULT_EXPENSE_CATEGORIES;
-  const userCategories = customCategories
-    .filter(c => c.type === type)
-    .map(c => c.name);
-  // Deduplicate: put defaults first, then user's custom ones not already in defaults
-  const categories = [
-    ...defaultCategories,
-    ...userCategories.filter(n => !defaultCategories.includes(n)),
-  ];
+  // Custom objects filtered by type, excluding any that clash with defaults
+  const customForType = customCategories.filter(
+    c => c.type === type && !defaultCategories.includes(c.name)
+  );
 
   const switchType = (newType) => {
     if (newType === type) return;
@@ -85,11 +209,17 @@ function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
     setCatError('');
   };
 
-  // Save a brand-new custom category
+  // All names for duplicate check
+  const allCategoryNames = [
+    ...defaultCategories,
+    ...customForType.map(c => c.name),
+  ];
+
+  // ── Add new category ──
   const handleSaveNewCategory = async () => {
     const trimmed = newCatName.trim();
     if (!trimmed) { setCatError('Name cannot be empty.'); return; }
-    if (categories.map(c => c.toLowerCase()).includes(trimmed.toLowerCase())) {
+    if (allCategoryNames.map(n => n.toLowerCase()).includes(trimmed.toLowerCase())) {
       setCatError('Category already exists.');
       return;
     }
@@ -98,7 +228,7 @@ function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
     try {
       const saved = await addCategory({ name: trimmed, type });
       setCustomCategories(prev => [...prev, saved]);
-      setCategory(saved.name);   // auto-select the new category
+      setCategory(saved.name);
       setNewCatName('');
       setShowAddCat(false);
     } catch {
@@ -109,10 +239,19 @@ function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
   };
 
   const handleNewCatKeyDown = (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); handleSaveNewCategory(); }
+    if (e.key === 'Enter')  { e.preventDefault(); handleSaveNewCategory(); }
     if (e.key === 'Escape') { setShowAddCat(false); setNewCatName(''); setCatError(''); }
   };
 
+  // ── Delete custom category ──
+  const handleDeleteCustom = useCallback(async (catObj) => {
+    await deleteCategory(catObj.id);
+    setCustomCategories(prev => prev.filter(c => c.id !== catObj.id));
+    // If the deleted category was selected, clear the selection
+    setCategory(prev => prev === catObj.name ? '' : prev);
+  }, []);
+
+  // ── Submit transaction ──
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!amount || !category || !date) return;
@@ -128,13 +267,11 @@ function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
       });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2200);
-      if (!editingTransaction) {
-        resetFormFields();
-      }
+      if (!editingTransaction) resetFormFields();
     } catch {
       alert(editingTransaction
-        ? 'Error updating transaction. Is the server running on port 5000?'
-        : 'Error adding transaction. Is the server running on port 5000?');
+        ? 'Error updating transaction.'
+        : 'Error adding transaction.');
     } finally {
       setSubmitting(false);
     }
@@ -150,12 +287,7 @@ function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
           <h2 className="section-title">{isEditing ? 'Edit Transaction' : 'Add Transaction'}</h2>
         </div>
         {isEditing && (
-          <button
-            type="button"
-            id="cancel-edit"
-            className="cancel-edit-btn"
-            onClick={onCancelEdit}
-          >
+          <button type="button" id="cancel-edit" className="cancel-edit-btn" onClick={onCancelEdit}>
             Cancel
           </button>
         )}
@@ -164,22 +296,18 @@ function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
       {/* Income / Expense Toggle */}
       <div className="type-toggle">
         <button
-          id="type-income"
-          type="button"
+          id="type-income" type="button"
           className={`toggle-btn ${type === 'income' ? 'toggle-income active' : ''}`}
           onClick={() => switchType('income')}
         >
-          <i className="fa-solid fa-arrow-up"></i>
-          Income
+          <i className="fa-solid fa-arrow-up"></i>Income
         </button>
         <button
-          id="type-expense"
-          type="button"
+          id="type-expense" type="button"
           className={`toggle-btn ${type === 'expense' ? 'toggle-expense active' : ''}`}
           onClick={() => switchType('expense')}
         >
-          <i className="fa-solid fa-arrow-down"></i>
-          Expense
+          <i className="fa-solid fa-arrow-down"></i>Expense
         </button>
       </div>
 
@@ -188,66 +316,39 @@ function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
         {/* Amount */}
         <div className="form-group">
           <label className="form-label" htmlFor="amount">
-            <i className="fa-solid fa-hashtag"></i>
-            Amount
+            <i className="fa-solid fa-hashtag"></i>Amount
           </label>
           <input
-            id="amount"
-            type="number"
-            min="0.01"
-            step="0.01"
-            placeholder="0"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            required
+            id="amount" type="number" min="0.01" step="0.01" placeholder="0"
+            value={amount} onChange={(e) => setAmount(e.target.value)} required
           />
         </div>
 
         {/* Category */}
         <div className="form-group">
           <label className="form-label" htmlFor="category">
-            <i className="fa-solid fa-tag"></i>
-            Category
+            <i className="fa-solid fa-tag"></i>Category
           </label>
 
           <div className="category-row-wrap">
-            <div className="select-wrap category-select-wrap">
-              <select
-                id="category"
+            {/* Custom dropdown replaces native <select> */}
+            <div className="category-select-wrap">
+              <CategorySelect
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                required
-              >
-                <option value="">Select a category...</option>
-                <optgroup label="Default">
-                  {defaultCategories.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </optgroup>
-                {userCategories.filter(n => !defaultCategories.includes(n)).length > 0 && (
-                  <optgroup label="Custom">
-                    {userCategories
-                      .filter(n => !defaultCategories.includes(n))
-                      .map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                  </optgroup>
-                )}
-              </select>
+                onChange={setCategory}
+                defaultCategories={defaultCategories}
+                customCategoryObjects={customForType}
+                onDeleteCustom={handleDeleteCustom}
+              />
             </div>
 
-            {/* + button to open the inline new-category input */}
+            {/* + button */}
             <button
-              type="button"
-              id="add-category-btn"
+              type="button" id="add-category-btn"
               className={`add-cat-btn ${showAddCat ? 'add-cat-btn--active' : ''}`}
               title="Add a custom category"
-              onClick={() => {
-                setShowAddCat(v => !v);
-                setCatError('');
-                setNewCatName('');
-              }}
               aria-expanded={showAddCat}
+              onClick={() => { setShowAddCat(v => !v); setCatError(''); setNewCatName(''); }}
             >
               <i className={`fa-solid ${showAddCat ? 'fa-xmark' : 'fa-plus'}`}></i>
             </button>
@@ -258,19 +359,14 @@ function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
             <div className="new-cat-inline" role="group" aria-label="Add custom category">
               <input
                 ref={addCatInputRef}
-                id="new-category-input"
-                type="text"
-                className="new-cat-input"
+                id="new-category-input" type="text" className="new-cat-input"
                 placeholder={`New ${type} category…`}
-                value={newCatName}
-                maxLength={40}
+                value={newCatName} maxLength={40}
                 onChange={e => { setNewCatName(e.target.value); setCatError(''); }}
                 onKeyDown={handleNewCatKeyDown}
               />
               <button
-                type="button"
-                id="save-new-category"
-                className="new-cat-save-btn"
+                type="button" id="save-new-category" className="new-cat-save-btn"
                 disabled={savingCat || !newCatName.trim()}
                 onClick={handleSaveNewCategory}
               >
@@ -281,21 +377,21 @@ function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
               </button>
             </div>
           )}
-          {catError && <p className="cat-error-msg"><i className="fa-solid fa-circle-exclamation"></i> {catError}</p>}
+          {catError && (
+            <p className="cat-error-msg">
+              <i className="fa-solid fa-circle-exclamation"></i> {catError}
+            </p>
+          )}
         </div>
 
         {/* Date */}
         <div className="form-group">
           <label className="form-label" htmlFor="date">
-            <i className="fa-regular fa-calendar"></i>
-            Date
+            <i className="fa-regular fa-calendar"></i>Date
           </label>
           <input
-            id="date"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
+            id="date" type="date"
+            value={date} onChange={(e) => setDate(e.target.value)} required
           />
         </div>
 
@@ -306,18 +402,13 @@ function TransactionForm({ onSave, editingTransaction, onCancelEdit }) {
             Note <span className="optional">(optional)</span>
           </label>
           <textarea
-            id="note"
-            placeholder="e.g. Monthly rent payment..."
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            rows={2}
+            id="note" placeholder="e.g. Monthly rent payment..."
+            value={note} onChange={(e) => setNote(e.target.value)} rows={2}
           />
         </div>
 
         <button
-          id="submit-transaction"
-          type="submit"
-          disabled={submitting}
+          id="submit-transaction" type="submit" disabled={submitting}
           className={`submit-btn ${type === 'income' ? 'submit-income' : 'submit-expense'} ${success ? 'success' : ''}`}
         >
           {submitting ? (
