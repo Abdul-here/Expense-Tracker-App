@@ -28,7 +28,6 @@ function TransactionList({
   onFromDateChange,
   onToDateChange,
   // PDF export props
-  monthlySummary,
   selectedMonth,
   selectedYear,
   userName,
@@ -54,6 +53,14 @@ function TransactionList({
       const categoryBreakdown = [...defaultCategories, ...extraCategories]
         .map((category) => ({ category, total: totals[category] }))
         .filter(({ total }) => total > 0);
+
+      const totalIncome = transactions
+        .filter((t) => t.type === 'income')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+      const totalExpense = transactions
+        .filter((t) => t.type === 'expense')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+      const monthlySummary = { totalIncome, totalExpense, balance: totalIncome - totalExpense };
 
       await exportToPDF({
         transactions,

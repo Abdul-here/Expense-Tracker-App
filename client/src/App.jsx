@@ -330,7 +330,6 @@ function App() {
             toDate={toDate}
             onFromDateChange={setFromDate}
             onToDateChange={setToDate}
-            monthlySummary={monthlySummary}
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}
             userName={user?.user_metadata?.full_name || user?.email || ''}
