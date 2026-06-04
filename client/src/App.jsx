@@ -330,7 +330,6 @@ function App() {
             toDate={toDate}
             onFromDateChange={setFromDate}
             onToDateChange={setToDate}
-            categoryBreakdown={categoryBreakdown}
             monthlySummary={monthlySummary}
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}

@@ -28,7 +28,6 @@ function TransactionList({
   onFromDateChange,
   onToDateChange,
   // PDF export props
-  categoryBreakdown,
   monthlySummary,
   selectedMonth,
   selectedYear,
@@ -37,6 +36,25 @@ function TransactionList({
 }) {
   const handleExportPDF = async () => {
     try {
+      const defaultCategories = ['Food', 'Rent', 'Transport', 'Bills', 'Shopping', 'Other'];
+      const defaultSet = new Set(defaultCategories);
+      const extraCategories = [];
+      const totals = Object.fromEntries(defaultCategories.map((category) => [category, 0]));
+
+      transactions.forEach((tx) => {
+        if (tx.type !== 'expense' || !tx.category) return;
+        const { category } = tx;
+        if (!defaultSet.has(category) && !Object.hasOwn(totals, category)) {
+          extraCategories.push(category);
+          totals[category] = 0;
+        }
+        totals[category] += Number(tx.amount) || 0;
+      });
+
+      const categoryBreakdown = [...defaultCategories, ...extraCategories]
+        .map((category) => ({ category, total: totals[category] }))
+        .filter(({ total }) => total > 0);
+
       await exportToPDF({
         transactions,
         categoryBreakdown,
