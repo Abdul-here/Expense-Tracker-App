@@ -918,7 +918,26 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
   .transaction-list { max-height: none; }
 }
 @media (max-width: 600px) {
-  .app-main { padding: 1rem 0.8rem 1.4rem; }
+  .app {
+    max-width: 100%;
+  }
+  .app-header {
+    width: 100%;
+  }
+  .header-content {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 0 1rem;
+    box-sizing: border-box;
+  }
+  .app-main {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 1rem 0 1.4rem;
+    box-sizing: border-box;
+  }
   .logo-sub { display: none; }
   .summary-grid {
     grid-template-columns: 1fr;
@@ -935,7 +954,7 @@ input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
     box-sizing: border-box;
   }
   .card-balance-pos, .card-balance-neg { grid-column: span 1; }
-  .header-content { padding: 0 0.8rem; height: 62px; }
+  .header-content { height: 62px; }
   .card-value { font-size: 1.25rem; }
   .form-card, .list-card, .category-breakdown-card { padding: 1rem; border-radius: 16px; }
   .type-toggle { margin-bottom: 1rem; }
