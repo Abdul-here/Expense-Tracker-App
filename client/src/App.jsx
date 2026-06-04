@@ -109,10 +109,9 @@ function App() {
       totals[category] += Number(tx.amount) || 0;
     });
 
-    return [...defaultCategories, ...extraCategories].map((category) => ({
-      category,
-      total: totals[category],
-    }));
+    return [...defaultCategories, ...extraCategories]
+      .map((category) => ({ category, total: totals[category] }))
+      .filter(({ total }) => total > 0);
   }, [filteredTransactions]);
 
   const monthlySummary = useMemo(() => {
