@@ -67,3 +67,37 @@ export const deleteTransaction = async (id) => {
   if (error) throw new Error(error.message);
   return { message: 'Transaction deleted successfully' };
 };
+
+// ── Custom Categories ──
+
+export const fetchCategories = async () => {
+  const userId = await getUserId();
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true });
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+export const addCategory = async ({ name, type }) => {
+  const userId = await getUserId();
+  const { data, error } = await supabase
+    .from('categories')
+    .insert({ name: name.trim(), type, user_id: userId })
+    .select('*')
+    .single();
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+export const deleteCategory = async (id) => {
+  const userId = await getUserId();
+  const { error } = await supabase
+    .from('categories')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId);
+  if (error) throw new Error(error.message);
+};
